@@ -5,14 +5,27 @@ var request = require('request');
 var cheerio = require('cheerio');
 var fs=require('fs');
 
+
+
+
 if (process.argv && process.argv.length > 2) {
+  let url =  '';
+  let obj = {};
+  // 区分掘金还是segmentfault
+  if (isNaN(process.argv[2])) {
+    url = 'https://juejin.im/post/';
+    obj.from = 'juejin';
+  } else {
+    url = 'https://segmentfault.com/a/';
+    obj.from = 'segmentfault';
+  }
   // 通过 GET 请求 的内容
-  request(`https://juejin.im/post/${process.argv[2]}`,  (error, response, body)  => {
+  request(`${url}${process.argv[2]}`,  (error, response, body)  => {
     if (!error && response.statusCode == 200) {
       // 输出网页内容
       const $ = cheerio.load(body);
       let art = $('html').find('article').html();
-      const title = $('html').find('.article-title').text();
+      let title = (obj.from === 'juejin' ? $('html').find('.article-title').text().trim() : $('#sf-article_title').text().trim()) || '标题未定义';
       // const markdown = tService.turndown(art);
       // 替换data-src -> src
       const regex = /data-src/ig;
